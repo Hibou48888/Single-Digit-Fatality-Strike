@@ -1,5 +1,5 @@
-//im gonna cry
 float trans;
+float x;
 color background;
 
 void setup()
@@ -10,26 +10,32 @@ void setup()
   fill(255);
   noStroke();
   smooth();
+  rect(300, 500, 20, 20);
   
   trans = 0;
+  x = width/2;
 }
 
 void draw()
 {
-  background(background);
+  //background(background);
+  
   translate(trans,0);
-  rect(width/2,height/2,10,10);
+  rect(x,height/2,10,10);
+  println(x + "\t" + trans);
 }
 
 void keyPressed()
 {
   if(keyCode == LEFT)
   {
-    trans += -10;
+    trans += -50;
+    x += 50;
   }
   
   if(keyCode == RIGHT)
   {
-    trans += 10;
+    trans += 50;
+    x += -50;
   }
 }
