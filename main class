@@ -1,10 +1,35 @@
 //im gonna cry
-setup()
+float trans;
+color background;
+
+void setup()
 {
+  background = color(60,60,60);
+  background(background);
+  size(800,600);
+  fill(255);
+  noStroke();
+  smooth();
   
+  trans = 0;
 }
 
-draw()
+void draw()
 {
+  background(background);
+  translate(trans,0);
+  rect(width/2,height/2,10,10);
+}
+
+void keyPressed()
+{
+  if(keyCode == LEFT)
+  {
+    trans += -10;
+  }
   
+  if(keyCode == RIGHT)
+  {
+    trans += 10;
+  }
 }
