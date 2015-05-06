@@ -1,18 +1,19 @@
-//not sure if this compiles either and that's my fault
-
 public class player
 {
-  int x;
-  int range;
+  float range;
+  float playerX;
+  float playerY;
   
-  static void player()
+  player()
   {
-    x = width/2;
     range = 300;
+    playerX = width/2;
+    playerY = height/2;
   }
   
   void render()
   {
-    rect(x, height/2, 50, 300);
+    fill(255);
+    rect(playerX, playerY, 50, 300);
   }
 }
