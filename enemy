@@ -1,12 +1,26 @@
-//i'm not sure if this even compiles dont look at me like that
-
 public class enemy
 {
-  int x;
+  float x;
+  String wayFacing;
+  float speed;
   
-  static void enemy()
+  enemy()
   {
     x = 0;
-    
+    wayFacing = "RIGHT";
+    speed = 1.1;
+  }
+  
+  void render()
+  {
+    rect(x, height/2, 50, 300);
+  }
+  
+  void tick()
+  {
+    if(wayFacing.equals("RIGHT"))
+      x += speed;
+    if(wayFacing.equals("LEFT"))
+      x += speed;
   }
 }
