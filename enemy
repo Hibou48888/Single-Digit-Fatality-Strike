@@ -1,0 +1,12 @@
+//i'm not sure if this even compiles dont look at me like that
+
+public class enemy
+{
+  int x;
+  
+  static void enemy()
+  {
+    x = 0;
+    
+  }
+}
