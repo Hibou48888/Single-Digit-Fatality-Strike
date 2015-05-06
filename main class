@@ -1,7 +1,7 @@
 //im gonna cry
-float trans;
-float x;
 color background;
+player p;
+enemy e;
 
 void setup()
 {
@@ -11,32 +11,29 @@ void setup()
   fill(255);
   noStroke();
   smooth();
-  rect(300, 500, 20, 20);
+  rectMode(CENTER);
   
-  trans = 0;
-  x = width/2;
+  p = new player();
+  e  = new enemy();
 }
 
 void draw()
 {
-  //background(background);
+  background(background);
+  if(e != null){
+  e.render();
+  e.tick();
+  }
+  p.render();
   
-  translate(trans,0);
-  rect(x,height/2,10,10);
-  println(x + "\t" + trans);
 }
 
 void keyPressed()
 {
   if(keyCode == LEFT)
-  {
-    trans += -50;
-    x += 50;
-  }
-  
-  if(keyCode == RIGHT)
-  {
-    trans += 50;
-    x += -50;
-  }
+    if(e.x >= p.playerX - p.range && e.x < p.playerX){
+      p.playerX = e.x;
+      e = null;
+    }
+      
 }
