@@ -3,12 +3,14 @@ public class player
   float range;
   float playerX;
   float playerY;
+  int health;
   
   player()
   {
     range = 300;
     playerX = width/2;
     playerY = height/2;
+    health = 10;
   }
   
   void render()
