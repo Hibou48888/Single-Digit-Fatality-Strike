@@ -3,17 +3,24 @@ public class enemy
   float x;
   String wayFacing;
   float speed;
+  color c;
+  int tall;
+  int wide;
   
   enemy()
   {
     x = 0;
     wayFacing = "RIGHT";
     speed = 1.1;
+    c = color(random(255),random(255),random(255));
+    tall = 300;
+    wide = 50;
   }
   
   void render()
   {
-    rect(x, height/2, 50, 300);
+    fill(c);
+    rect(x, height/2, wide, tall);
   }
   
   void tick()
