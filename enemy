@@ -7,8 +7,17 @@ public class enemy
   
   enemy()
   {
-    x = 0;
-    wayFacing = "RIGHT";
+    int n = (int)random(2);
+    if(n == 0)
+    {
+      wayFacing = "RIGHT";
+      x = 0;
+    }
+    else
+    {
+      wayFacing = "LEFT";
+      x = width;
+    }
     speed = 1.1;
     c = color(random(255),random(255),random(255));
   }
@@ -16,7 +25,7 @@ public class enemy
   void render()
   {
     fill(c);
-    rect(x, height/2, 50, 300);
+    rect(x, height/2, 100, 200);
   }
   
   void tick()
@@ -24,6 +33,6 @@ public class enemy
     if(wayFacing.equals("RIGHT"))
       x += speed;
     if(wayFacing.equals("LEFT"))
-      x += speed;
+      x -= speed;
   }
 }
