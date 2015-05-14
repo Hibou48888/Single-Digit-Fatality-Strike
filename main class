@@ -1,39 +1,75 @@
 //im gonna cry
 color background;
 player p;
-enemy e;
+int score;
+int shift;
+ArrayList<enemy> eList;
 
 void setup()
 {
-  background = color(60,60,60);
+  background = color(60, 60, 60);
   background(background);
-  size(800,600);
+  size(1200, 600);
   fill(255);
   noStroke();
   smooth();
   rectMode(CENTER);
-  
+  score = 0;
+  shift = 0;
   p = new player();
-  e  = new enemy();
+  eList = new ArrayList<enemy>();
 }
 
 void draw()
 {
-  background(background);
-  if(e != null){
-  e.render();
-  e.tick();
+  if ((int)random(200) == 10)
+  {
+    eList.add(new enemy());
   }
-  p.render();
-  
+
+  background(background);
+  for (enemy e : eList) //goes through the list of enemies and renders them and then moves them
+  {
+    if (e != null)
+    {
+      e.render();
+      e.tick();
+    }
+  }
+
+  p.render(); //v important
+  if(eList.size() != 0 && eList.get(0) != null)
+  {
+    if (eList.get(0).x >= p.playerX - eList.get(0).wide/2) {
+      eList.remove(0);
+      p.health--;
+      score--;
+    }
+  }
 }
 
 void keyPressed()
 {
-  if(keyCode == LEFT)
-    if(e.x >= p.playerX - p.range && e.x < p.playerX){
-      p.playerX = e.x;
-      e = null;
+  if (keyCode == LEFT && eList.size() > 0)
+  {
+    if (eList.get(0) != null)
+    {
+      println(eList.get(0));
+      if (eList.get(0).x >= p.playerX - p.range && eList.get(0).x < p.playerX)//checks to see if its within range of the player
+      { 
+        shift(p.playerX - eList.get(0).x); //shifts everything around the player
+
+        eList.remove(0); //deletes the thing
+        score++; //pretty self explanitory
+      }
     }
-      
+  }
 }
+
+  void shift(float dist)
+  {
+    for (enemy ene : eList)
+    {
+      ene.x += dist; //dist can be negative, so it goes both ways
+    }
+  }
