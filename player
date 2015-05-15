@@ -4,6 +4,7 @@ public class player
   float playerX;
   float playerY;
   PImage frame;
+  int health;
   
   player()
   {
@@ -11,6 +12,7 @@ public class player
     playerX = width/2;
     playerY = height/2;
     frame = null;
+    health = 10;
   }
   
   void render()
