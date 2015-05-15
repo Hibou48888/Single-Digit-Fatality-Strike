@@ -1,67 +1,173 @@
+//due to the jerkiness of the motion in shift(), a flash should be implemented that covers up the abruptness of the shift
+//suggest placing a rect over the entire screen at the end that has fill(x), with x decreasing in opacity to give it a flash effect.
+
 color background;
 player p;
 int score;
-int shift;
-ArrayList<enemy> eList;
+int shift;    //what does this do?
+float difficulty;  //controls the speed of the enemies
+ArrayList<Enemy> eListLeft;
+ArrayList<Enemy> eListRight;
 
 void setup()
 {
-  background = color(60,60,60);
+  background = color(60, 60, 60);
   background(background);
-  size(1200,600);
+  size(1200, 600);
   fill(255);
   noStroke();
   smooth();
   rectMode(CENTER);
+  imageMode(CENTER);
   score = 0;
   shift = 0;
+  difficulty = 1.5;
   p = new player();
-  eList = new ArrayList<enemy>();
+  eListLeft = new ArrayList<Enemy>();
+  eListRight = new ArrayList<Enemy>();
+
 }
 
 void draw()
 {
-  if((int)random(200) == 10)
-  {
-    eList.add(new enemy());
-  }
-  
   background(background);
-  for(enemy e : eList) //goes through the list of enemies and renders them and then moves them
+  
+  p.render(); //v important
+  
+  //this next segment spawns the enemies
+  if ((int)random(200) == 0)
   {
-    if(e != null)
+    if((int)random(2) == 0)
+      eListLeft.add(new Enemy("LEFT", difficulty));  //adds an enemy that spawns on the RIGHT facing LEFT
+    else
+      eListRight.add(new Enemy("RIGHT", difficulty));  //adds an enemy that spawns on the LEFT facing RIGHT
+  }
+
+  //goes through the list of enemies and renders them and then moves them
+  //also flips them if they are facing the wrong direction
+  for (Enemy e : eListLeft)
+  {
+    if (e != null)
     {
+      if(e.wayFacing.equals("RIGHT") && e.x > p.playerX)
+        e.wayFacing = "LEFT";
+      if(e.wayFacing.equals("LEFT") && e.x < p.playerX)
+        e.wayFacing = "RIGHT";
+      e.speed = difficulty;
       e.render();
       e.tick();
     }
   }
+  for (Enemy e : eListRight) //does the same as above
+  {
+    if (e != null)
+    {
+      if(e.wayFacing.equals("RIGHT") && e.x > p.playerX)
+        e.wayFacing = "LEFT";
+      if(e.wayFacing.equals("LEFT") && e.x < p.playerX)
+        e.wayFacing = "RIGHT";
+      e.speed = difficulty;
+      e.render();
+      e.tick();
+    }
+  }
+    
+  //next two segments cause enemies to attack when within range
+  if(eListLeft.size() != 0 && eListLeft.get(0) != null)//if there's an enemy in the list
+  {
+    if (eListLeft.get(0).x <= p.playerX + eListLeft.get(0).wide)  //if the enemy reaches a certain range of the player (basically next to the player)
+    {
+      shift(eListLeft.get(0).x/5); //moves all of the enemie to right
+      difficulty = 0;
+      p.health--;
+      score--;
+    }
+  }
   
-  p.render(); //v important
+  //might need adjustment for right side
+  if(eListRight.size() != 0 && eListRight.get(0) != null)
+  {
+    if (eListRight.get(0).x >= p.playerX - eListRight.get(0).wide)  //if the enemy reaches a certain range of the player
+    {
+      shift(-eListRight.get(0).x/5); //moves all of the enemies to the left
+      difficulty = 0;
+      p.health--;
+      score--;
+    }
+  }
   
+  //brings speed of enemies back up to its original amount (hardcoded at 1.5 for now)
+  if(difficulty < 1.5)
+  {
+    if(difficulty < .05)  //after it gets past .05, increments at a higher value
+      difficulty += .005;
+    else
+      difficulty += .01;
+  }
 }
+
 
 void keyPressed()
 {
-  if(keyCode == LEFT && eList.size() > 0)
+  if (keyCode == LEFT && eListLeft.size() > 0)
   {
-    if(eList.get(0) != null)
-      {
-        println(eList.get(0));
-        if(eList.get(0).x >= p.playerX - p.range && eList.get(0).x < p.playerX)//checks to see if its within range of the player
-        { 
-          shift(p.playerX - eList.get(0).x); //shifts everything around the player
-          
-          eList.remove(0); //deletes the thing
-          score++; //pretty self explanitory
-        }
+    if (eListLeft.get(0) != null)
+    {
+      println(eListLeft.get(0));
+      if (eListLeft.get(0).x >= p.playerX - p.range && eListLeft.get(0).x < p.playerX)//checks to see if its within range of the player
+      { 
+        shift(p.playerX - eListLeft.get(0).x); //shifts everything around the player
+
+        eListLeft.remove(0); //deletes the thing
+        score++; //pretty self explanitory
       }
     }
+  }
+  
+  //needs adjustment for right
+  if (keyCode == RIGHT && eListRight.size() > 0)
+  {
+    if (eListRight.get(0) != null)
+    {
+      println(eListRight.get(0));
+      if (eListRight.get(0).x >= p.playerX - p.range && eListRight.get(0).x < p.playerX)//checks to see if its within range of the player
+      { 
+        shift(p.playerX - eListRight.get(0).x); //shifts everything around the player
+
+        eListRight.remove(0); //deletes the thing
+        score++; //pretty self explanitory
+      }
+    }
+  }
 }
+
+
 
 void shift(float dist)
 {
-  for(enemy ene : eList)
-  {
-    ene.x += dist; //dist can be negative, so it goes both ways
-  }
+  for (Enemy e : eListLeft)
+    e.x += dist; //dist can be negative, so it goes both ways
+  for (Enemy e : eListRight)
+    e.x += dist;
+}
+
+//this method will shake by translating randomly each time it is called
+//this method will take a boolean, which is initially false until some event in the main method makes it true
+//when the taken boolean is true, translate() will be called in a random direction and some int will be set to a certain amount
+//the main method will decrease the int until it is 0, at which point the boolean passed as an argument for this method will be set to false
+void screenShake(boolean isShake)
+{
+  //help
+}
+
+//general idea is to decrease the speed at which the enemies move.
+//the main method will increase the speed back up to default 
+void timeSlow(int seconds)
+{
+  //placeholder
+}
+
+void mouseClicked()
+{
+  eListLeft.add(new Enemy("LEFT"));
 }
