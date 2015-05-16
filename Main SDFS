@@ -9,6 +9,7 @@ float difficulty;  //controls the speed of the enemies
 int missLag;      //basically the time remaining until the player can attack again after missing
 ArrayList<Enemy> eListLeft;
 ArrayList<Enemy> eListRight;
+ArrayList<Background> bgList;  //should hold multiple instances of one background image so they can loop continuously
 
 void setup()
 {
@@ -18,25 +19,46 @@ void setup()
   fill(255);
   noStroke();
   smooth();
+  textSize(15);
   rectMode(CENTER);
   imageMode(CENTER);
   score = 0;
   shift = 0;
-  difficulty = 1.5;
+  difficulty = 1.9;
   missLag = 0;
   p = new player();
   eListLeft = new ArrayList<Enemy>();
   eListRight = new ArrayList<Enemy>();
-
+  bgList = new ArrayList<Background>();
+  bgList.add(new Background("bgTexture.gif"));
+  
+  for(int i = 0; i < width/bgList.get(0).wide; i++)  //should fill the background list with as many instances of the background image as needed to keep the background filled
+  {
+    bgList.add(new Background("bgTexture.gif"));
+  }
+  //this loops any new backgrounds and removes any old ones
+  for(int i = 0; i < bgList.size(); i++)
+  {
+    Background b = bgList.get(i);
+    b.x = -b.wide + (b.wide * i);
+  }
 }
 
 void draw()
 {
   background(background);
+    
+  rectMode(CORNER);
+  fill(255, 180, 180);
+  rect(width/2 + 2, height/2 + 100, p.range - 2, 20);  //sets right range block
+  fill(150, 200, 255);
+  rect(width/2 - 2, height/2 + 100, -p.range + 2, 20);  //sets left range block
+  rectMode(CENTER);  //sets rectMode back to it should be for rendering enemies
   
-  fill(255);
-  text(p.health, width - 20, 10);
-  p.render(); //v important
+  
+  
+  for(Background b : bgList)
+    b.render();
   
   //this next segment spawns the enemies
   if ((int)random(150) == 0)
@@ -85,6 +107,7 @@ void draw()
       difficulty = 0;
       missLag = 20;
       p.health--;
+      p.wayFacing = "RIGHT";
       score--;
     }
   }
@@ -97,12 +120,13 @@ void draw()
       difficulty = 0;
       missLag = 20;
       p.health--;
+      p.wayFacing = "LEFT";
       score--;
     }
   }
   
-  //brings speed of enemies back up to its original amount (hardcoded at 1.5 for now)
-  if(difficulty < 1.5)
+  //brings speed of enemies back up to its original amount (hardcoded at 1.9 for now)
+  if(difficulty < 1.9)
   {
     if(difficulty < .05)  //after it gets past .05, increments at a higher value
       difficulty += .005;
@@ -114,7 +138,10 @@ void draw()
   if(missLag > 0)
     missLag--;
     
-  println(missLag);
+  fill(255);
+  text("Health: " + p.health, width/2 - 40, height/3);
+  text("Score: " + score, width - 80, 20);
+  p.render(); //v important
 }
 
 
@@ -126,13 +153,15 @@ void keyPressed()
     { 
       shift(p.playerX - eListLeft.get(0).x); //shifts everything around the player
       eListLeft.remove(0); //deletes the thing
+      difficulty = 1.5;  //causes a short pause
       score++; //pretty self explanitory
     }
     else  //if there are no enemies in range and the player will miss
     {
       shift(-p.range);  //"moves" the player
-      missLag = 50;  //stuns the player for a bit
+      missLag = 40;  //stuns the player for a bit
     }
+    p.wayFacing = "RIGHT";
   }
   
   if (keyCode == LEFT && missLag == 0)  //if left arrow is pressed and the player didn't just miss
@@ -141,13 +170,15 @@ void keyPressed()
     { 
       shift(p.playerX - eListRight.get(0).x); //shifts everything around the player
       eListRight.remove(0); //deletes the thing
+      difficulty = 1.5;  //causes a short pause
       score++; //pretty self explanitory
     }
     else  //if there are no enemies in range and the player will miss
     {
       shift(p.range);  //"moves" the player
-      missLag = 50;  //stuns the player for a bit
+      missLag = 40;  //stuns the player for a bit
     }
+    p.wayFacing = "LEFT";
   }
 }
 
@@ -159,6 +190,10 @@ void shift(float dist)
     e.x += dist; //dist can be negative, so it goes both ways
   for (Enemy e : eListRight)
     e.x += dist;
+  for(Background b: bgList)
+  {
+    b.x += (dist * .7);
+  }
 }
 
 //this method will shake by translating randomly each time it is called
@@ -177,6 +212,13 @@ void timeSlow(int seconds)
   //placeholder
 }
 
+//for when the player loses
+void lose()
+{
+  //placeholder
+}
+
+//debugging methods
 void mouseClicked()
 {
   eListLeft.add(new Enemy("LEFT"));
