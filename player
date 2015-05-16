@@ -18,11 +18,10 @@ public class player
   void render()
   {
     fill(255);
-    frame = loadImage("player_stand.png");
+    frame = loadImage("player_stand.gif");
     if(frame != null)
       image(frame, playerX, playerY, 100, 200);
     else
-      rect(playerX, playerY, 50, 300);
-      
+      rect(playerX, playerY, 100, 200, 5);
   }
 }
