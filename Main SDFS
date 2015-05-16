@@ -155,9 +155,12 @@ void draw()
     pushMatrix();  //it wiggles around because screw priorities
     translate(width/2, 90);
     rotate(PI * random(-0.05, 0.05));
-    text("MISS!", -30, 7);
+    PImage img = loadImage("miss_text.gif");
+    tint(255, missOpacity);  //changes the images opacity
+    image(img, 0, 0, 200, 100);
     popMatrix();
   }
+  tint(255, 255);
   p.render(); //v important
 }
 
