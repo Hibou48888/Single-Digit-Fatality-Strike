@@ -1,6 +1,7 @@
 public class Enemy
 {
   float x;
+  float y;
   String wayFacing;
   float speed;
   color c;
@@ -19,6 +20,7 @@ public class Enemy
       wayFacing = "LEFT";
       x = width + wide/2;
     }
+    y = width/2;
     speed = 1.1;
     c = color(random(255),random(255),random(255));
     tall = 200;
