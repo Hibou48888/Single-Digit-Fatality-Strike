@@ -6,6 +6,7 @@ player p;
 int score;
 int shift;    //what does this do?
 float difficulty;  //controls the speed of the enemies
+int missLag;      //basically the time remaining until the player can attack again after missing
 ArrayList<Enemy> eListLeft;
 ArrayList<Enemy> eListRight;
 
@@ -22,6 +23,7 @@ void setup()
   score = 0;
   shift = 0;
   difficulty = 1.5;
+  missLag = 0;
   p = new player();
   eListLeft = new ArrayList<Enemy>();
   eListRight = new ArrayList<Enemy>();
@@ -32,15 +34,17 @@ void draw()
 {
   background(background);
   
+  fill(255);
+  text(p.health, width - 20, 10);
   p.render(); //v important
   
   //this next segment spawns the enemies
-  if ((int)random(200) == 0)
+  if ((int)random(150) == 0)
   {
     if((int)random(2) == 0)
-      eListLeft.add(new Enemy("LEFT", difficulty));  //adds an enemy that spawns on the RIGHT facing LEFT
+      eListLeft.add(new Enemy("LEFT", difficulty));  //adds an enemy that spawn on the RIGHT facing LEFT
     else
-      eListRight.add(new Enemy("RIGHT", difficulty));  //adds an enemy that spawns on the LEFT facing RIGHT
+      eListRight.add(new Enemy("RIGHT", difficulty));  //adds an enemy that spawn on the LEFT facing RIGHT
   }
 
   //goes through the list of enemies and renders them and then moves them
@@ -79,18 +83,19 @@ void draw()
     {
       shift(eListLeft.get(0).x/5); //moves all of the enemie to right
       difficulty = 0;
+      missLag = 20;
       p.health--;
       score--;
     }
   }
   
-  //might need adjustment for right side
   if(eListRight.size() != 0 && eListRight.get(0) != null)
   {
     if (eListRight.get(0).x >= p.playerX - eListRight.get(0).wide)  //if the enemy reaches a certain range of the player
     {
       shift(-eListRight.get(0).x/5); //moves all of the enemies to the left
       difficulty = 0;
+      missLag = 20;
       p.health--;
       score--;
     }
@@ -104,39 +109,44 @@ void draw()
     else
       difficulty += .01;
   }
+  
+  //acts as a timer counting down to when the player can attack again
+  if(missLag > 0)
+    missLag--;
+    
+  println(missLag);
 }
 
 
 void keyPressed()
 {
-  if (keyCode == LEFT && eListLeft.size() > 0)
+  if (keyCode == RIGHT && missLag == 0)  //if right arrow is pressed and the player didn't just miss
   {
-    if (eListLeft.get(0) != null)
+    if (eListLeft.size() > 0 && eListLeft.get(0) != null && eListLeft.get(0).x > p.playerX && eListLeft.get(0).x <= p.playerX + p.range)  //if there's an enemy and it's within range
+    { 
+      shift(p.playerX - eListLeft.get(0).x); //shifts everything around the player
+      eListLeft.remove(0); //deletes the thing
+      score++; //pretty self explanitory
+    }
+    else  //if there are no enemies in range and the player will miss
     {
-      println(eListLeft.get(0));
-      if (eListLeft.get(0).x >= p.playerX - p.range && eListLeft.get(0).x < p.playerX)//checks to see if its within range of the player
-      { 
-        shift(p.playerX - eListLeft.get(0).x); //shifts everything around the player
-
-        eListLeft.remove(0); //deletes the thing
-        score++; //pretty self explanitory
-      }
+      shift(-p.range);  //"moves" the player
+      missLag = 50;  //stuns the player for a bit
     }
   }
   
-  //needs adjustment for right
-  if (keyCode == RIGHT && eListRight.size() > 0)
+  if (keyCode == LEFT && missLag == 0)  //if left arrow is pressed and the player didn't just miss
   {
-    if (eListRight.get(0) != null)
+    if (eListRight.size() > 0 && eListRight.get(0) != null && eListRight.get(0).x < p.playerX && eListRight.get(0).x > p.playerX - p.range)  //if there's an enemy and it's within range
+    { 
+      shift(p.playerX - eListRight.get(0).x); //shifts everything around the player
+      eListRight.remove(0); //deletes the thing
+      score++; //pretty self explanitory
+    }
+    else  //if there are no enemies in range and the player will miss
     {
-      println(eListRight.get(0));
-      if (eListRight.get(0).x >= p.playerX - p.range && eListRight.get(0).x < p.playerX)//checks to see if its within range of the player
-      { 
-        shift(p.playerX - eListRight.get(0).x); //shifts everything around the player
-
-        eListRight.remove(0); //deletes the thing
-        score++; //pretty self explanitory
-      }
+      shift(p.range);  //"moves" the player
+      missLag = 50;  //stuns the player for a bit
     }
   }
 }
