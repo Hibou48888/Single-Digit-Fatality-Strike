@@ -1,9 +1,17 @@
-//im gonna cry
+//i'm gonna cry
+//due to the jerkiness of the motion in shift(), a flash should be implemented that covers up the abruptness of the shift
+//suggest placing a rect over the entire screen at the end that has fill(x), with x decreasing in opacity to give it a flash effect.
+
 color background;
 player p;
 int score;
-int shift;
-ArrayList<enemy> eList;
+int shift;    //what does this do?
+float difficulty;  //controls the speed of the enemies
+int missLag;      //basically the time remaining until the player can attack again after missing
+float missOpacity;
+ArrayList<Enemy> eListLeft;
+ArrayList<Enemy> eListRight;
+ArrayList<Background> bgList;  //should hold multiple instances of one background image so they can loop continuously
 
 void setup()
 {
@@ -14,62 +22,246 @@ void setup()
   noStroke();
   smooth();
   rectMode(CENTER);
+  imageMode(CENTER);
   score = 0;
   shift = 0;
+  difficulty = 1.9;
+  missLag = 0;
+  missOpacity = 0;
   p = new player();
-  eList = new ArrayList<enemy>();
+  eListLeft = new ArrayList<Enemy>();
+  eListRight = new ArrayList<Enemy>();
+  bgList = new ArrayList<Background>();
+  bgList.add(new Background("bgTexture.gif"));
+  
+  //this should eventually be moved
+  for(int i = 0; i < width/bgList.get(0).wide; i++)  //should fill the background list with as many instances of the background image as needed to keep the background filled
+  {
+    bgList.add(new Background("bgTexture.gif"));
+  }
+  //this loops any new backgrounds and removes any old ones
+  for(int i = 0; i < bgList.size(); i++)
+  {
+    Background b = bgList.get(i);
+    b.x = -b.wide + (b.wide * i);
+  }
 }
 
 void draw()
 {
-  if ((int)random(200) == 10)
+  background(background);
+  textSize(15);
+  
+  rectMode(CORNER);
+  fill(255, 180, 180);
+  rect(width/2 + 2, height/2 + 100, p.range - 2, 20);  //sets right range block
+  fill(150, 200, 255);
+  rect(width/2 - 2, height/2 + 100, -p.range + 2, 20);  //sets left range block
+  rectMode(CENTER);  //sets rectMode back to it should be for rendering enemies
+  
+  
+  
+  for(Background b : bgList)
+    b.render();
+  
+  //this next segment spawns the enemies
+  if ((int)random(150) == 0)
   {
-    eList.add(new enemy());
+    if((int)random(2) == 0)
+      eListLeft.add(new Enemy("LEFT", difficulty));  //adds an enemy that spawn on the RIGHT facing LEFT
+    else
+      eListRight.add(new Enemy("RIGHT", difficulty));  //adds an enemy that spawn on the LEFT facing RIGHT
   }
 
-  background(background);
-  for (enemy e : eList) //goes through the list of enemies and renders them and then moves them
+  //goes through the list of enemies and renders them and then moves them
+  //also flips them if they are facing the wrong direction
+  for (Enemy e : eListLeft)
   {
     if (e != null)
     {
+      if(e.wayFacing.equals("RIGHT") && e.x > p.playerX)
+        e.wayFacing = "LEFT";
+      if(e.wayFacing.equals("LEFT") && e.x < p.playerX)
+        e.wayFacing = "RIGHT";
+      e.speed = difficulty;
       e.render();
       e.tick();
     }
   }
-
-  p.render(); //v important
-  if(eList.size() != 0 && eList.get(0) != null)
+  for (Enemy e : eListRight) //does the same as above
   {
-    if (eList.get(0).x >= p.playerX - eList.get(0).wide/2) {
-      eList.remove(0);
+    if (e != null)
+    {
+      if(e.wayFacing.equals("RIGHT") && e.x > p.playerX)
+        e.wayFacing = "LEFT";
+      if(e.wayFacing.equals("LEFT") && e.x < p.playerX)
+        e.wayFacing = "RIGHT";
+      e.speed = difficulty;
+      e.render();
+      e.tick();
+    }
+  }
+    
+  //next two segments cause enemies to attack when within range
+  if(eListLeft.size() != 0 && eListLeft.get(0) != null)//if there's an enemy in the list
+  {
+    if (eListLeft.get(0).x <= p.playerX + eListLeft.get(0).wide)  //if the enemy reaches a certain range of the player (basically next to the player)
+    {
+      shift(eListLeft.get(0).x/5); //moves all of the enemie to right
+      difficulty = 0;
+      missLag = 20;
       p.health--;
+      p.wayFacing = "RIGHT";
       score--;
     }
   }
+  
+  if(eListRight.size() != 0 && eListRight.get(0) != null)
+  {
+    if (eListRight.get(0).x >= p.playerX - eListRight.get(0).wide)  //if the enemy reaches a certain range of the player
+    {
+      shift(-eListRight.get(0).x/5); //moves all of the enemies to the left
+      difficulty = 0;
+      missLag = 20;
+      p.health--;
+      p.wayFacing = "LEFT";
+      score--;
+    }
+  }
+  
+  //brings speed of enemies back up to its original amount (hardcoded at 1.9 for now)
+  if(difficulty < 1.9)
+  {
+    if(difficulty < .05)  //after it gets past .05, increments at a higher value
+      difficulty += .005;
+    else
+      difficulty += .01;
+  }
+  
+  //acts as a timer counting down to when the player can attack again
+  if(missLag > 0)
+    missLag--;
+    
+  //decreases the miss opacity back to 0 if it's not already
+  if(missOpacity > 0)
+    missOpacity -= 3;
+    
+  fill(255);
+  text("Health: " + p.health, width/2 - 40, height/3);
+  text("Score: " + score, width - 80, 20);
+  if(missOpacity > 0)  //displays text when the player misses
+  {
+    textSize(30);
+    fill(255, 200, 200, missOpacity);
+    pushMatrix();  //it wiggles around because screw priorities
+    translate(width/2, 90);
+    rotate(PI * random(-0.05, 0.05));
+    PImage img = loadImage("miss_text.gif");
+    tint(255, missOpacity);  //changes the images opacity
+    image(img, 0, 0, 200, 100);
+    popMatrix();
+  }
+  tint(255, 255);
+  p.render(); //v important
 }
+
 
 void keyPressed()
 {
-  if (keyCode == LEFT && eList.size() > 0)
+  if (keyCode == RIGHT && missLag == 0)  //if right arrow is pressed and the player didn't just miss
   {
-    if (eList.get(0) != null)
-    {
-      println(eList.get(0));
-      if (eList.get(0).x >= p.playerX - p.range && eList.get(0).x < p.playerX)//checks to see if its within range of the player
-      { 
-        shift(p.playerX - eList.get(0).x); //shifts everything around the player
-
-        eList.remove(0); //deletes the thing
-        score++; //pretty self explanitory
-      }
+    if (eListLeft.size() > 0 && eListLeft.get(0) != null && eListLeft.get(0).x > p.playerX && eListLeft.get(0).x <= p.playerX + p.range)  //if there's an enemy and it's within range
+    { 
+      shift(p.playerX - eListLeft.get(0).x); //shifts everything around the player
+      eListLeft.remove(0); //deletes the thing
+      difficulty = 1.5;  //causes a short pause
+      score++; //pretty self explanitory
     }
+    else  //if there are no enemies in range and the player will miss
+    {
+      shift(-p.range);  //"moves" the player
+      missOpacity = 255;  //make the miss text appear
+      missLag = 40;  //stuns the player for a bit
+    }
+    p.wayFacing = "RIGHT";
+  }
+  
+  if (keyCode == LEFT && missLag == 0)  //if left arrow is pressed and the player didn't just miss
+  {
+    if (eListRight.size() > 0 && eListRight.get(0) != null && eListRight.get(0).x < p.playerX && eListRight.get(0).x > p.playerX - p.range)  //if there's an enemy and it's within range
+    { 
+      shift(p.playerX - eListRight.get(0).x); //shifts everything around the player
+      eListRight.remove(0); //deletes the thing
+      difficulty = 1.5;  //causes a short pause
+      score++; //pretty self explanitory
+    }
+    else  //if there are no enemies in range and the player will miss
+    {
+      shift(p.range);  //"moves" the player
+      missOpacity = 255;  //make the miss text appear
+      missLag = 40;  //stuns the player for a bit
+    }
+    p.wayFacing = "LEFT";
   }
 }
 
-  void shift(float dist)
+
+
+void shift(float dist)
+{
+  for (Enemy e : eListLeft)
+    e.x += dist; //dist can be negative, so it goes both ways
+  for (Enemy e : eListRight)
+    e.x += dist;
+  for(Background b: bgList)
   {
-    for (enemy ene : eList)
-    {
-      ene.x += dist; //dist can be negative, so it goes both ways
-    }
+    b.x += (dist * .7);
   }
+}
+
+//this will be used for screenShake()
+void shift(float dist, float distY)
+{
+  for (Enemy e : eListLeft)
+  {
+    e.x += dist; //dist can be negative, so it goes both ways
+    e.y += distY;
+  }
+  for (Enemy e : eListRight)
+  {
+    e.x += dist;
+    e.y += distY;
+  }
+  for(Background b: bgList)
+  {
+    b.x += (dist * .7);
+    b.x += (distY * .7);
+  }
+  p.playerX += dist;
+  p.playerY += distY;
+}
+
+//this method will shake by translating randomly each time it is called
+//this method will take a boolean, which is initially false until some event in the main method makes it true
+//when the taken boolean is true, shift() will be called in a random direction and some int will be set to a certain amount
+//the main method will decrease the int until it is 0, at which point the screen is set back to normal and the boolean passed as an argument for this method will be set to false
+//possible concern with smoothing down screen shake as it returns to normal
+void screenShake(boolean isShake)
+{
+  //help
+}
+
+//for when the player loses
+void lose()
+{
+  //placeholder
+}
+
+//debugging methods
+void mouseClicked()
+{
+  if(mouseButton == RIGHT)
+    eListLeft.add(new Enemy("LEFT"));
+  if(mouseButton == LEFT)
+    eListRight.add(new Enemy("RIGHT"));
+}
