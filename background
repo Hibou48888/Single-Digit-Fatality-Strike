@@ -1,0 +1,24 @@
+//class for the backgrounds that will scroll with parallax
+//made into a class for easier storage and access
+
+class Background
+{
+  PImage img;
+  float x;
+  float y;
+  float wide;
+  float tall;
+  
+  Background(String s)
+  {
+    img = loadImage(s);
+    wide = 100;
+    tall = 100;
+    y = height/2;
+  }
+  
+  void render()
+  {
+    image(img, x, y, wide, tall);
+  }
+}
