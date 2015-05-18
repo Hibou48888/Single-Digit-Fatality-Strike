@@ -3,19 +3,34 @@ public class player
   float range;
   float playerX;
   float playerY;
+  PImage frame;
   int health;
+  String wayFacing;
   
   player()
   {
-    range = 300;
+    range = 250;
     playerX = width/2;
     playerY = height/2;
+    frame = null;
     health = 10;
+    wayFacing = "RIGHT";
   }
   
   void render()
   {
     fill(255);
-    rect(playerX, playerY, 50, 300);
+    frame = loadImage("player_stand_R.gif");
+    if(frame != null)
+    {
+      if(wayFacing == "RIGHT")
+        frame = loadImage("player_stand_R.gif");
+      if(wayFacing == "LEFT")
+        frame = loadImage("player_stand_L.gif");
+
+      image(frame, playerX, playerY, -100, 200);
+    }
+    else
+      rect(playerX, playerY, 100, 200, 5);
   }
 }
