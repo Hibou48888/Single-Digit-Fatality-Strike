@@ -2,6 +2,7 @@
 //due to the jerkiness of the motion in shift(), a flash should be implemented that covers up the abruptness of the shift
 //suggest placing a rect over the entire screen at the end that has fill(x), with x decreasing in opacity to give it a flash effect.
 
+PImage splash;
 color background;
 player p;
 int score;
@@ -13,8 +14,12 @@ ArrayList<Enemy> eListLeft;
 ArrayList<Enemy> eListRight;
 ArrayList<Background> bgList;  //should hold multiple instances of one background image so they can loop continuously
 
+boolean isPlaying;
+
 void setup()
 {
+  isPlaying = false;
+  splash = loadImage("placeholder_splash.png");
   background = color(60, 60, 60);
   background(background);
   size(1200, 600);
@@ -50,8 +55,17 @@ void setup()
 void draw()
 {
   background(background);
-  textSize(15);
-  
+  if(!isPlaying)
+  {
+    image(splash,width/2,height/2);
+    textSize(15);
+  }
+  if(isPlaying)
+    play();
+}
+
+void play()
+{
   rectMode(CORNER);
   fill(255, 180, 180);
   rect(width/2 + 2, height/2 + 100, p.range - 2, 20);  //sets right range block
@@ -168,6 +182,8 @@ void draw()
 
 void keyPressed()
 {
+  if(isPlaying)
+  {
   if (keyCode == RIGHT && missLag == 0)  //if right arrow is pressed and the player didn't just miss
   {
     if (eListLeft.size() > 0 && eListLeft.get(0) != null && eListLeft.get(0).x > p.playerX && eListLeft.get(0).x <= p.playerX + p.range)  //if there's an enemy and it's within range
@@ -202,6 +218,11 @@ void keyPressed()
       missLag = 40;  //stuns the player for a bit
     }
     p.wayFacing = "LEFT";
+  }
+  }
+  else{
+  isPlaying = true;
+  textSize(15);
   }
 }
 
