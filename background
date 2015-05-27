@@ -19,6 +19,6 @@ class Background
   
   void render()
   {
-    image(img, x, y, wide, tall);
+    //image(img, x, y, wide, tall);
   }
 }
